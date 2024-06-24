@@ -1,6 +1,7 @@
 import asyncio
 import websockets
 import xmlrpc.client
+import threading
 
 connected_clients = set()
 
@@ -23,6 +24,13 @@ async def run_websocket_server():
         print("WebSocket Server running on port 8765...")
         await asyncio.Future()  # Run forever
 
-# Start the WebSocket server in a separate thread
-websocket_thread = threading.Thread(target=lambda: asyncio.run(run_websocket_server()))
-websocket_thread.start()
+def start_websocket_server():
+    asyncio.run(run_websocket_server())
+
+if __name__ == "__main__":
+    # Start the WebSocket server in a separate thread
+    websocket_thread = threading.Thread(target=start_websocket_server)
+    websocket_thread.start()
+
+    # Keep the main thread alive
+    websocket_thread.join()

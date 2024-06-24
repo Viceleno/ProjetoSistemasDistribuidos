@@ -1,3 +1,4 @@
+# rpc_server.py
 from xmlrpc.server import SimpleXMLRPCServer
 import threading
 
@@ -21,3 +22,4 @@ def run_rpc_server():
 # Start the RPC server in a separate thread
 rpc_thread = threading.Thread(target=run_rpc_server)
 rpc_thread.start()
+
