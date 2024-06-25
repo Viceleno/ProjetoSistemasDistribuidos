@@ -10,16 +10,34 @@
 </head>
 <body>
     <div class="container">
-        <div class="row justify-content-center">
+        <!-- Login Screen -->
+        <div id="login-screen" class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Login do Chat</div>
+                    <div class="card-body">
+                        <div class="input-group mb-3">
+                            <input type="text" id="username-input" class="form-control" placeholder="Insira seu nome" />
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" onclick="enterChat()">Entrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div id="chat-screen" class="row justify-content-center" style="display: none;">
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">Chat</div>
                     <div class="card-body">
                         <div id="chat-box" class="border rounded p-2 mb-3"></div>
                         <div class="input-group">
-                            <input type="text" id="message-input" class="form-control" placeholder="Type a message..." />
+                            <input type="text" id="message-input" class="form-control" placeholder="Escreva uma mensagem..." />
                             <div class="input-group-append">
-                                <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+                                <button class="btn btn-primary" onclick="sendMessage()">Enviar</button>
                             </div>
                         </div>
                     </div>
@@ -34,39 +52,62 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-        const chatBox = document.getElementById("chat-box");
-        const messageInput = document.getElementById("message-input");
+        let username = '';
 
-        const ws = new WebSocket("ws://localhost:8765");
-
-        ws.onmessage = (event) => {
-            const message = document.createElement("div");
-            message.classList.add("alert", "alert-secondary");
-            message.textContent = event.data;
-            chatBox.appendChild(message);
-            chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to the bottom
-        };
-
-        function sendMessage() {
-            const message = messageInput.value;
-            if (message.trim()) {
-                ws.send(message);
-                messageInput.value = "";
-                messageInput.focus();
+        function enterChat() {
+            username = document.getElementById('username-input').value.trim();
+            if (username) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('chat-screen').style.display = 'block';
+                connectWebSocket();
+            } else {
+                alert('Por favor insira seu nome.');
             }
         }
 
-        ws.onopen = () => {
-            console.log("Connected to WebSocket server");
-        };
+        function connectWebSocket() {
+            const chatBox = document.getElementById("chat-box");
+            const messageInput = document.getElementById("message-input");
 
-        ws.onclose = () => {
-            console.log("Disconnected from WebSocket server");
-        };
+            const ws = new WebSocket("ws://localhost:8765");
 
-        ws.onerror = (error) => {
-            console.error("WebSocket error:", error);
-        };
+            ws.onmessage = (event) => {
+                const message = document.createElement("div");
+                message.classList.add("alert", "alert-secondary");
+                message.textContent = event.data;
+                chatBox.appendChild(message);
+                chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to the bottom
+            };
+
+            function sendMessage() {
+                const message = messageInput.value;
+                if (message.trim()) {
+                    const fullMessage = `${username}: ${message}`;
+                    ws.send(fullMessage);
+                    const userMessage = document.createElement("div");
+                    userMessage.classList.add("alert", "alert-primary");
+                    userMessage.textContent = fullMessage;
+                    chatBox.appendChild(userMessage);
+                    chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to the bottom
+                    messageInput.value = "";
+                    messageInput.focus();
+                }
+            }
+
+            window.sendMessage = sendMessage;
+
+            ws.onopen = () => {
+                console.log("Connected to WebSocket server");
+            };
+
+            ws.onclose = () => {
+                console.log("Disconnected from WebSocket server");
+            };
+
+            ws.onerror = (error) => {
+                console.error("WebSocket error:", error);
+            };
+        }
     </script>
 </body>
 </html>
