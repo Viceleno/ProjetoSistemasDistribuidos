@@ -6,20 +6,24 @@
     <title>Chat</title>
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.4/dayjs.min.js"></script>
 </head>
 <body>
-    <div class="container">
+    <div class="container full-height centered">
         <!-- Login Screen -->
-        <div id="login-screen" class="row justify-content-center">
+        <div id="login-screen" class="row justify-content-center w-100">
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header">Login do Chat</div>
+                    <div class="card-header text-center">Login do Chat</div>
                     <div class="card-body">
                         <div class="input-group mb-3">
                             <input type="text" id="username-input" class="form-control" placeholder="Insira seu nome" />
                             <div class="input-group-append">
-                                <button class="btn btn-primary" onclick="enterChat()">Entrar</button>
+                                <button class="btn btn-primary" onclick="enterChat()">
+                                    <i class="fas fa-sign-in-alt"></i> Entrar
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -28,16 +32,18 @@
         </div>
 
         <!-- Chat Screen -->
-        <div id="chat-screen" class="row justify-content-center" style="display: none;">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Chat</div>
-                    <div class="card-body">
-                        <div id="chat-box" class="border rounded p-2 mb-3"></div>
+        <div id="chat-screen" class="row justify-content-center w-100" style="display: none;">
+            <div class="col-md-6 full-height d-flex flex-column">
+                <div class="card flex-grow-1">
+                    <div class="card-header text-center">Chat</div>
+                    <div class="card-body d-flex flex-column">
+                        <div id="chat-box" class="border rounded p-2 mb-3 flex-grow-1"></div>
                         <div class="input-group">
                             <input type="text" id="message-input" class="form-control" placeholder="Escreva uma mensagem..." />
                             <div class="input-group-append">
-                                <button class="btn btn-primary" onclick="sendMessage()">Enviar</button>
+                                <button class="btn btn-primary" onclick="sendMessage()">
+                                    <i class="fas fa-paper-plane"></i> Enviar
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -50,7 +56,6 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
     <script>
         let username = '';
 
@@ -58,7 +63,7 @@
             username = document.getElementById('username-input').value.trim();
             if (username) {
                 document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('chat-screen').style.display = 'block';
+                document.getElementById('chat-screen').style.display = 'flex';
                 connectWebSocket();
             } else {
                 alert('Por favor insira seu nome.');
@@ -74,27 +79,10 @@
             ws.onmessage = (event) => {
                 const message = document.createElement("div");
                 message.classList.add("alert", "alert-secondary");
-                message.textContent = event.data;
+                message.innerHTML = `${event.data}<div class="message-time">${dayjs().format('HH:mm')}</div>`;
                 chatBox.appendChild(message);
                 chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to the bottom
             };
-
-            function sendMessage() {
-                const message = messageInput.value;
-                if (message.trim()) {
-                    const fullMessage = `${username}: ${message}`;
-                    ws.send(fullMessage);
-                    const userMessage = document.createElement("div");
-                    userMessage.classList.add("alert", "alert-primary");
-                    userMessage.textContent = fullMessage;
-                    chatBox.appendChild(userMessage);
-                    chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to the bottom
-                    messageInput.value = "";
-                    messageInput.focus();
-                }
-            }
-
-            window.sendMessage = sendMessage;
 
             ws.onopen = () => {
                 console.log("Connected to WebSocket server");
@@ -106,6 +94,22 @@
 
             ws.onerror = (error) => {
                 console.error("WebSocket error:", error);
+            };
+
+            window.sendMessage = () => {
+                const message = messageInput.value;
+                if (message.trim()) {
+                    const currentTime = dayjs().format('HH:mm');
+                    const fullMessage = `${username}: ${message}`;
+                    ws.send(fullMessage);
+                    const userMessage = document.createElement("div");
+                    userMessage.classList.add("alert", "alert-primary");
+                    userMessage.innerHTML = `${fullMessage}<div class="message-time">${currentTime}</div>`;
+                    chatBox.appendChild(userMessage);
+                    chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to the bottom
+                    messageInput.value = "";
+                    messageInput.focus();
+                }
             };
         }
     </script>

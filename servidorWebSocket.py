@@ -22,15 +22,15 @@ async def handler(websocket, path):
 async def run_websocket_server():
     async with websockets.serve(handler, "localhost", 8765):
         print("WebSocket Server running on port 8765...")
-        await asyncio.Future()  # Run forever
+        await asyncio.Future()  
 
 def start_websocket_server():
     asyncio.run(run_websocket_server())
 
 if __name__ == "__main__":
-    # Start the WebSocket server in a separate thread
+    # Começan o servidor websocket em uma thread separada
     websocket_thread = threading.Thread(target=start_websocket_server)
     websocket_thread.start()
 
-    # Keep the main thread alive
+    # Mantenha a thread main aberta
     websocket_thread.join()
